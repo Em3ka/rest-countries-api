@@ -3,14 +3,22 @@ export function getRootStyle(rootEl, cssVariable) {
 }
 
 export function getPreferredTheme() {
-  const userPref = localStorage.getItem('theme');
-  const systemPref = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return (
+    localStorage.getItem('theme') ||
+    (window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light')
+  );
+}
 
-  // If the user previously selected dark mode manually, or
-  // if no saved preference (first visit), but their system prefers dark mode
-  if (userPref === 'dark' || (!userPref && systemPref)) {
-    return 'dark';
-  }
+export function getBtnAriaLabel(theme) {
+  return theme === 'dark' ? 'Activate light theme' : 'Activate dark theme';
+}
 
-  return 'light';
+export function getCurrency(currencies) {
+  return currencies?.[Object.keys(currencies || {})[0]]?.name || '';
+}
+
+export function getLanguages(languages) {
+  return Object.values(languages || {})?.join(', ') || '';
 }
