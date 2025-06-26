@@ -1,14 +1,17 @@
-import { getPreferredTheme, getBtnAriaLabel } from './utils.js';
+import { getPreferredTheme, setButtonAttr, getToggledTheme } from './utils.js';
 import { setThemeIcon } from './themeIcon.js';
 import { getCountries } from './countries.js';
 
-const themeToggleLabel = document.getElementById('themeToggleLabel');
+const topTrigger = document.querySelector('.top-trigger');
+const scrollToTopBtn = document.querySelector('.scroll-to-top');
+const loadMoreTrigger = document.getElementById('loadMoreTrigger');
+const buttonLabel = document.getElementById('themeToggleLabel');
+const toggleThemeBtn = document.getElementById('themeToggle');
 const bouncingLoader = document.querySelector('.bouncing-loader');
 const countryGrid = document.querySelector('.country-grid');
 const statusMessage = document.querySelector('.status-message');
 const countrySearch = document.getElementById('countrySearch');
 const regionFilter = document.getElementById('region');
-const toggleThemeBtn = document.getElementById('themeToggle');
 const core = document.querySelector('.core');
 const sunRay = document.querySelectorAll('.sun-ray');
 const moonRay = document.querySelector('.moon-ray');
@@ -16,6 +19,9 @@ const moonRay = document.querySelector('.moon-ray');
 const rootEl = document.documentElement;
 const iconProps = { core, sunRay, moonRay, rootEl };
 let allCountriesArr = [];
+let isLoading = false;
+let currentIndex = 0;
+const batchSize = 10;
 
 init();
 
@@ -31,18 +37,38 @@ function renderLoader(state) {
 }
 
 async function initializeCountries() {
+  if (isLoading) return;
+  isLoading = true;
+
   renderLoader(true);
   const countryFields = {
     fields: ['name', 'population', 'flags', 'region', 'capital'],
   };
   try {
-    const allCountries = await getCountries(countryFields);
-    allCountriesArr = [...allCountries];
+    // Only fetch once
+    if (allCountriesArr.length === 0) {
+      const allCountries = await getCountries(countryFields);
+      allCountriesArr = [...allCountries];
+    }
+
+    const end = Math.min(currentIndex + batchSize, allCountriesArr.length);
+    const nextBatch = allCountriesArr.slice(currentIndex, end);
 
     // Defer UI update to allow a paint frame
     requestAnimationFrame(() => {
-      filterCountries(allCountries);
+      renderBatch(nextBatch);
     });
+
+    if (currentIndex === batchSize) {
+      setupTopObserver();
+    }
+
+    currentIndex = end;
+
+    // Stop observing if all countries have been shown
+    if (currentIndex >= allCountriesArr.length) {
+      observer.disconnect();
+    }
   } catch (error) {
     renderError({
       title: 'Failed to load countries',
@@ -50,6 +76,7 @@ async function initializeCountries() {
     });
   } finally {
     renderLoader(false);
+    isLoading = false;
   }
 }
 
@@ -60,11 +87,11 @@ function renderCountry(countryData) {
       <li class="country-card">
         <img
           loading="lazy"
-          src="${flags.svg}"
-          alt="${flags.alt}" />
+          src="${flags?.png}"
+          alt="${flags?.alt}" />
         <div class="country-card__details">
           <a href="/details.html">
-            <h3>${name.common}</h3>
+            <h3>${name?.common}</h3>
           </a>
           <p><span class="stat-label">
             Population:</span>${Number(population).toLocaleString()}
@@ -120,12 +147,13 @@ const updateRegion = async function (e) {
   }
 };
 
-function filterCountries(countries) {
-  // Clear the current DOM
-  countryGrid.innerHTML = '';
-
-  // Render each new country
+function renderBatch(countries) {
   countries.forEach((country) => renderCountry(country));
+}
+
+function filterCountries(filteredList) {
+  countryGrid.innerHTML = '';
+  filteredList.forEach((country) => renderCountry(country));
 }
 
 function initializeThemeToggle() {
@@ -133,35 +161,55 @@ function initializeThemeToggle() {
   const theme = getPreferredTheme();
 
   // Set initial button attributes
-  setButtonAttr(theme);
+  setButtonAttr({ theme, button: toggleThemeBtn, buttonLabel, rootEl });
 
   // Set initial button icon state
   setThemeIcon(theme, iconProps, true);
 }
 
-function setButtonAttr(currentTheme) {
-  toggleThemeBtn.setAttribute('aria-label', getBtnAriaLabel(currentTheme));
-  toggleThemeBtn.setAttribute(
-    'aria-pressed',
-    currentTheme === 'dark' ? 'true' : 'false'
-  );
-
-  themeToggleLabel.textContent =
-    currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
-  rootEl.setAttribute('data-theme', currentTheme);
-}
-
-toggleThemeBtn.addEventListener('click', () => {
-  const currentTheme = rootEl.getAttribute('data-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-  setButtonAttr(newTheme);
+toggleThemeBtn.addEventListener('click', function () {
+  const newTheme = getToggledTheme(rootEl);
+  setButtonAttr({ theme: newTheme, button: this, buttonLabel, rootEl });
   setThemeIcon(newTheme, iconProps, rootEl);
   localStorage.setItem('theme', newTheme);
 });
 
+scrollToTopBtn.addEventListener('click', () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  });
+});
+
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        initializeCountries();
+      }
+    });
+  },
+  {
+    rootMargin: '100px',
+  }
+);
+
+observer.observe(loadMoreTrigger);
+
+function setupTopObserver() {
+  if (!topTrigger) return;
+  const observer = new IntersectionObserver((entries) => {
+    const entry = entries[0];
+    if (!entry.isIntersecting) {
+      scrollToTopBtn.classList.add('show');
+    } else {
+      scrollToTopBtn.classList.remove('show');
+    }
+  });
+
+  observer.observe(topTrigger);
+}
+
 regionFilter.addEventListener('change', updateRegion);
 
-window.addEventListener('load', () =>
-  rootEl.classList.remove('no-theme-transition')
-);
+window.addEventListener('load', () => rootEl.classList.remove('no-theme-transition'));

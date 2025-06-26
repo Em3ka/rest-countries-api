@@ -106,6 +106,7 @@
       --bg-element: var(--clr-white);
       --text-main: var(--clr-grey-950);
       --input-border: var(--clr-grey-400);
+      --button-bg: var(--clr-blue-950);
 
       --font-size-xs: var(--fs-100);
       --font-size-sm: var(--fs-200);
@@ -123,7 +124,9 @@
       --sun-stroke-width: 8;
       --moon-stroke-width: 6;
 
-      --radius-sm: 0.3125rem;
+      --radius-sm: 0.125rem;
+      --radius: 0.3125rem;
+      --radius-lg: 0.625rem;
       --shadow: 0px 2px 4px hsla(0, 0%, 0%, 0.056);
       --shadow-lg: 0px 2px 9px hsla(0, 0%, 0%, 0.056);
     }
@@ -133,6 +136,8 @@
       --bg-main: var(--clr-blue-950);
       --bg-element: var(--clr-blue-900);
       --text-main: var(--clr-white);
+      --button-bg: var(--clr-white);
+      /* --button-color: -- */
     }
   }
 
@@ -161,7 +166,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 2.5rem 0.5rem;
+    gap: var(--flex-gap);
     flex-wrap: wrap;
   }
 
@@ -240,6 +245,7 @@
   }
 
   .hero {
+    --flex-gap: 2.5rem 0.5rem;
     padding-block-start: 6.5rem;
 
     @media (width > 48rem) {
@@ -248,7 +254,6 @@
   }
 
   .country {
-    /* position: relative; */
     margin-block-start: var(--block-start, 2rem);
     margin-block-end: var(--block-end, 4rem);
 
@@ -271,7 +276,7 @@
     inline-size: 100%;
     max-inline-size: 30rem;
     padding: 1rem 2rem;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
     transition: box-shadow 0.2s ease;
 
@@ -301,19 +306,17 @@
     font-size: var(--font-size-xs);
     box-shadow: var(--shadow-lg);
     border: 0;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius);
   }
 
   .country-grid {
-    --grid-min-col-size: 16.5rem;
+    /* --grid-min-col-size: 16.5rem; */
+    --grid-min-col-size: 13rem;
     --grid-gap: 2.5rem;
 
     display: grid;
     gap: var(--grid-gap);
-    grid-template-columns: repeat(
-      auto-fill,
-      minmax(min(var(--grid-min-col-size), 100%), 1fr)
-    );
+    grid-template-columns: repeat(auto-fill, minmax(min(var(--grid-min-col-size), 100%), 1fr));
 
     @media (width > 48rem) {
       --grid-gap: 4.5rem;
@@ -321,14 +324,18 @@
   }
 
   .country-card {
+    display: grid;
+    grid-template-rows: 1fr min-content;
     color: var(--text-main);
     background-color: var(--bg-element);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
 
-    & img {
-      border-top-left-radius: var(--radius-sm);
-      border-top-right-radius: var(--radius-sm);
+    img {
+      block-size: 100%;
+      inline-size: 100%;
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
     }
   }
 
@@ -405,6 +412,92 @@
       &:nth-child(4) {
         animation-delay: 0.4s;
       }
+    }
+  }
+
+  /* ============= Details Page ============= */
+
+  .button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-main);
+    background-color: var(--bg-element);
+    line-height: 2;
+    font-weight: 300;
+    padding-block: 0.25rem;
+    padding-inline: 2rem;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+  }
+
+  .country-info {
+    --flex-gap: 3.5rem;
+    margin-block-start: var(--block-start, 4rem);
+
+    .country-flag {
+      border-radius: var(--radius-lg);
+    }
+
+    .info-text {
+      h2 {
+        font-size: var(--font-size-2xl);
+        margin-block-end: 1rem;
+      }
+
+      .stats-flex {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+
+        p {
+          line-height: 2;
+        }
+      }
+    }
+
+    @media (width > 48rem) {
+      --block-start: 3.5rem;
+
+      h2 {
+        margin-block-end: 1.5rem;
+      }
+    }
+
+    @media (width > 64rem) {
+      --block-start: 5rem;
+    }
+  }
+
+  .scroll-to-top.show {
+    opacity: 0.6;
+    pointer-events: auto;
+  }
+
+  .scroll-to-top {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: fixed;
+    inset-block-end: 2rem;
+    inset-inline-end: 2rem;
+    inline-size: 2rem;
+    block-size: 2rem;
+    padding: 1rem;
+    color: var(--bg-element);
+    background-color: var(--button-bg);
+    border-radius: var(--radius);
+    opacity: 0;
+    border: none;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    z-index: 500;
+
+    &:hover {
+      opacity: 1;
     }
   }
 }
