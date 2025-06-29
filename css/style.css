@@ -127,6 +127,7 @@
       --radius-sm: 0.125rem;
       --radius: 0.3125rem;
       --radius-lg: 0.625rem;
+      --shadow-md: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
       --shadow: 0px 2px 4px hsla(0, 0%, 0%, 0.056);
       --shadow-lg: 0px 2px 9px hsla(0, 0%, 0%, 0.056);
     }
@@ -137,7 +138,6 @@
       --bg-element: var(--clr-blue-900);
       --text-main: var(--clr-white);
       --button-bg: var(--clr-white);
-      /* --button-color: -- */
     }
   }
 
@@ -166,7 +166,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--flex-gap);
+    gap: var(--flex-gap, 2.5rem 0.5rem);
     flex-wrap: wrap;
   }
 
@@ -245,7 +245,6 @@
   }
 
   .hero {
-    --flex-gap: 2.5rem 0.5rem;
     padding-block-start: 6.5rem;
 
     @media (width > 48rem) {
@@ -310,32 +309,49 @@
   }
 
   .country-grid {
-    /* --grid-min-col-size: 16.5rem; */
-    --grid-min-col-size: 13rem;
-    --grid-gap: 2.5rem;
+    --grid-min-col-size: 14rem;
+    --grid-gap: clamp(2.5rem, 0.214rem + 4.762vi, 4.5rem);
 
     display: grid;
     gap: var(--grid-gap);
+    justify-items: center;
     grid-template-columns: repeat(auto-fill, minmax(min(var(--grid-min-col-size), 100%), 1fr));
-
-    @media (width > 48rem) {
-      --grid-gap: 4.5rem;
-    }
   }
 
   .country-card {
     display: grid;
-    grid-template-rows: 1fr min-content;
+    grid-template-rows: 10rem 1fr;
+    inline-size: 100%;
+    max-inline-size: 16.5rem;
     color: var(--text-main);
     background-color: var(--bg-element);
     border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
+    transition: scale 0.3s ease-in-out;
+
+    &:hover {
+      scale: 1.05;
+    }
+
+    &:hover img {
+      scale: 1;
+      rotate: 0deg;
+    }
+  }
+
+  .country-flag-wrapper {
+    block-size: 100%;
+    inline-size: 100%;
+    overflow: clip;
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
 
     img {
-      block-size: 100%;
-      inline-size: 100%;
-      border-top-left-radius: var(--radius);
-      border-top-right-radius: var(--radius);
+      inline-size: inherit;
+      block-size: inherit;
+      scale: 1.02;
+      rotate: -2deg;
+      transition: scale 0.3s ease-in-out, rotate 0.3s ease-in-out;
     }
   }
 
@@ -349,6 +365,10 @@
       font-size: var(--font-size-lg);
       font-weight: 800;
       margin-block-end: 1rem;
+    }
+
+    p {
+      line-height: 1.14;
     }
 
     p + p {
@@ -417,6 +437,21 @@
 
   /* ============= Details Page ============= */
 
+  .details {
+    padding-block-start: 7.5rem;
+    padding-block-end: 3.5rem;
+
+    @media (width > 48rem) {
+      padding-block: 8rem;
+      padding-block-end: 4rem;
+    }
+
+    @media (width > 64rem) {
+      padding-block: 10.25rem;
+    }
+  }
+
+  /* Note: Fix background color for hover */
   .button {
     display: inline-flex;
     justify-content: center;
@@ -430,13 +465,23 @@
     padding-inline: 2rem;
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow);
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: var(--clr-grey-400);
+    }
   }
 
   .country-info {
-    --flex-gap: 3.5rem;
-    margin-block-start: var(--block-start, 4rem);
+    display: grid;
+    align-items: center;
+    gap: 3.5rem;
+    margin-block-start: 4rem;
 
     .country-flag {
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: cover;
       border-radius: var(--radius-lg);
     }
 
@@ -448,17 +493,34 @@
 
       .stats-flex {
         display: flex;
-        gap: 2rem;
+        align-items: center;
+        gap: 1rem 1.5rem;
         flex-wrap: wrap;
+      }
 
-        p {
-          line-height: 2;
+      .stats-block {
+        font-weight: 300;
+        line-height: 2;
+
+        h3 {
+          font-size: 1.5rem;
+        }
+
+        .border-country {
+          display: inline-block;
+          padding-inline: 1rem;
+          font-size: var(--font-size-md);
+          background-color: var(--bg-element);
+          border-radius: var(--radius-sm);
+          filter: drop-shadow(var(--shadow-md));
         }
       }
     }
 
     @media (width > 48rem) {
-      --block-start: 3.5rem;
+      margin-block-start: 3.5rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4.5rem;
 
       h2 {
         margin-block-end: 1.5rem;
@@ -466,7 +528,8 @@
     }
 
     @media (width > 64rem) {
-      --block-start: 5rem;
+      margin-block-start: 5rem;
+      /* gap: 7.5rem; */
     }
   }
 
@@ -518,7 +581,7 @@
     margin-inline-end: 0.125rem;
   }
 
-  .no-theme-transition * {
+  html.no-theme-transition * {
     transition: none;
   }
 

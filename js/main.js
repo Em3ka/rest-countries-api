@@ -1,4 +1,11 @@
-import { getPreferredTheme, setButtonAttr, getToggledTheme } from './utils.js';
+import {
+  getPreferredTheme,
+  setButtonAttr,
+  getToggledTheme,
+  renderError,
+  removeClassOnLoad,
+  clearError,
+} from './utils.js';
 import { setThemeIcon } from './themeIcon.js';
 import { getCountries } from './countries.js';
 
@@ -18,16 +25,17 @@ const moonRay = document.querySelector('.moon-ray');
 
 const rootEl = document.documentElement;
 const iconProps = { core, sunRay, moonRay, rootEl };
+const obsOption = { rootMargin: '100px' };
 let allCountriesArr = [];
 let isLoading = false;
 let currentIndex = 0;
-const batchSize = 10;
+const batchSize = 12;
 
 init();
 
 function init() {
   initializeThemeToggle();
-  initializeCountries();
+  loadMoreCountries();
 }
 
 function renderLoader(state) {
@@ -36,16 +44,15 @@ function renderLoader(state) {
     : bouncingLoader.setAttribute('hidden', '');
 }
 
-async function initializeCountries() {
+async function loadMoreCountries() {
   if (isLoading) return;
   isLoading = true;
 
   renderLoader(true);
   const countryFields = {
-    fields: ['name', 'population', 'flags', 'region', 'capital'],
+    fields: ['name', 'population', 'flags', 'capital', 'region'],
   };
   try {
-    // Only fetch once
     if (allCountriesArr.length === 0) {
       const allCountries = await getCountries(countryFields);
       allCountriesArr = [...allCountries];
@@ -54,11 +61,16 @@ async function initializeCountries() {
     const end = Math.min(currentIndex + batchSize, allCountriesArr.length);
     const nextBatch = allCountriesArr.slice(currentIndex, end);
 
-    // Defer UI update to allow a paint frame
     requestAnimationFrame(() => {
       renderBatch(nextBatch);
     });
 
+    // Clear error if we actually have something to render
+    if (nextBatch.length) {
+      clearError(statusMessage);
+    }
+
+    // Setup "scroll to top" once first batch is shown
     if (currentIndex === batchSize) {
       setupTopObserver();
     }
@@ -70,10 +82,8 @@ async function initializeCountries() {
       observer.disconnect();
     }
   } catch (error) {
-    renderError({
-      title: 'Failed to load countries',
-      body: error.message,
-    });
+    console.error(error);
+    renderError({ title: 'Failed to load countries', body: error.message }, statusMessage);
   } finally {
     renderLoader(false);
     isLoading = false;
@@ -81,17 +91,19 @@ async function initializeCountries() {
 }
 
 function renderCountry(countryData) {
+  if (!countryData || !countryData.name?.common) return;
   const { name, population, flags, region, capital = [] } = countryData;
 
   const countryHTML = /* html */ `
       <li class="country-card">
-        <img
-          loading="lazy"
-          src="${flags?.png}"
-          alt="${flags?.alt}" />
+        <div class="country-flag-wrapper">
+          <img
+            src="${flags.png}"
+            alt="${flags.alt}" />
+        </div>
         <div class="country-card__details">
-          <a href="/details.html">
-            <h3>${name?.common}</h3>
+          <a href="/details.html?name=${encodeURIComponent(name.common)}">
+            <h3>${name.common}</h3>
           </a>
           <p><span class="stat-label">
             Population:</span>${Number(population).toLocaleString()}
@@ -104,32 +116,6 @@ function renderCountry(countryData) {
        </li>`;
 
   countryGrid.insertAdjacentHTML('beforeend', countryHTML);
-}
-
-// Note: Fix the aria-label
-function renderError(error) {
-  let title = "Well, that's awkward";
-  let body = '';
-
-  if (typeof error === 'string') {
-    body = error;
-  } else if (error instanceof Error) {
-    body = error.message;
-  } else if (error?.body) {
-    title = error.title ?? title;
-    body = error.body;
-  } else {
-    body = String(error);
-  }
-
-  const errorHTML = /* html */ `
-      <img src="/images/status-message.png" alt="" />
-      <h2>${title}</h2>
-      <p>${body}</p> `;
-
-  statusMessage.insertAdjacentHTML('beforeend', errorHTML);
-  statusMessage.setAttribute('aria-hidden', 'true');
-  statusMessage.removeAttribute('hidden');
 }
 
 const updateRegion = async function (e) {
@@ -152,7 +138,7 @@ function renderBatch(countries) {
 }
 
 function filterCountries(filteredList) {
-  countryGrid.innerHTML = '';
+  clearCountryList();
   filteredList.forEach((country) => renderCountry(country));
 }
 
@@ -175,26 +161,18 @@ toggleThemeBtn.addEventListener('click', function () {
 });
 
 scrollToTopBtn.addEventListener('click', () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth',
-  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-const observer = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        initializeCountries();
-      }
-    });
-  },
-  {
-    rootMargin: '100px',
-  }
-);
+const countryObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      loadMoreCountries();
+    }
+  });
+}, obsOption);
 
-observer.observe(loadMoreTrigger);
+countryObserver.observe(loadMoreTrigger);
 
 function setupTopObserver() {
   if (!topTrigger) return;
@@ -212,4 +190,31 @@ function setupTopObserver() {
 
 regionFilter.addEventListener('change', updateRegion);
 
-window.addEventListener('load', () => rootEl.classList.remove('no-theme-transition'));
+countrySearch.addEventListener('input', (e) => {
+  const name = e.target.value.trim().toLowerCase();
+  clearError(statusMessage);
+  countryObserver.disconnect(); // Pause loading more countries
+
+  const matchingCountries = allCountriesArr.filter((c) =>
+    c.name?.common?.toLowerCase().includes(name)
+  );
+  clearCountryList();
+
+  if (matchingCountries.length > 0) {
+    renderBatch(matchingCountries);
+  } else {
+    renderError('No matches found', statusMessage);
+  }
+
+  if (!name) {
+    currentIndex = 0;
+    loadMoreCountries(); // Load initial batch again
+    countryObserver.observe(loadMoreTrigger);
+  }
+});
+
+function clearCountryList() {
+  if (countryGrid) countryGrid.innerHTML = '';
+}
+
+removeClassOnLoad(rootEl, 'no-theme-transition');
