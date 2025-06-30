@@ -6,6 +6,7 @@ import {
   setButtonAttr,
   removeClassOnLoad,
   renderError,
+  safeGet,
 } from './utils.js';
 import { setThemeIcon } from './themeIcon.js';
 import { getCountries, getBorderCountryName } from './countries.js';
@@ -41,56 +42,104 @@ function initializeThemeToggle() {
 
 async function initializeCountry() {
   try {
+    showSkeleton();
     const name = new URLSearchParams(location.search).get('name');
+    if (!name) throw new Error('No country name provided in URL');
+
     const country = await getCountries(name);
-    if (!country) throw new Error('Country not found');
+    if (!country || !country.length) throw new Error('Country not found');
+
     await renderCountry(country[0]);
   } catch (error) {
     console.error(`Failed to fetch: ${error}`);
+    hideSkeleton();
     renderError(error, statusMessage);
   }
 }
 
+function showSkeleton() {
+  countryInfo.innerHTML = /* html */ `
+    <div class="country-flag skeleton skeleton-flag"></div>
+    <div class="info-text">
+      <div class="skeleton skeleton-title"></div>
+      <div class="stats-grid">
+        <div class="stats-block flow">
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+        </div>
+        <div class="stats-block flow">
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+        </div>
+        <div class="stats-block stats-flex">
+          <div class="skeleton skeleton-line" style="inline-size: 22ch"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function hideSkeleton() {
+  countryInfo.innerHTML = '';
+}
+
 async function renderCountry(countryData) {
+  console.log(countryData);
   const bordersHTML = await renderBorderCountries(countryData);
   const countryHTML = /* html */ `
-          <img class="country-flag" src="${countryData.flags.svg}" alt="${countryData.flags.alt}" />
-            <div class="info-text">
-              <h2 id="country-heading">${countryData.name.common}</h2>
-              <div class="stats-flex">
-                <!-- First stats block -->
-                <ul class="stats-block">
-                  <li><span class="stat-label">Native Name:</span> 
-                    ${countryData.altSpellings[1]}
-                  </li>
-                  <li><span class="stat-label">Population:</span> ${countryData.population}</li>
-                  <li><span class="stat-label">Region:</span> ${countryData.region}</li>
-                  <li><span class="stat-label">Sub Region:</span> ${countryData.subregion}</li>
-                  <li><span class="stat-label">Capital:</span> ${countryData.capital[0]}</li>
-                </ul>
+        <img class="country-flag" 
+              src="${safeGet(countryData, 'flags.svg', 'Country flag not available')}"
+              alt="${safeGet(countryData, 'flags.alt', 'Country flag alt not available')}" />
+          <div class="info-text fade-in">
+            <h2 id="country-heading">${safeGet(countryData, 'name.common')}</h2>
+            <div class="stats-grid">
+              <!-- First stats block -->
+              <ul class="stats-block">
+                <li><span class="stat-label">Native Name:</span> 
+                  ${safeGet(countryData, 'altSpellings.1')}
+                </li>
+                <li><span class="stat-label">Population:</span> 
+                   ${safeGet(countryData, 'population').toLocaleString()}
+                </li>
+                <li><span class="stat-label">Region:</span> 
+                   ${safeGet(countryData, 'region')}
+                </li>
+                <li><span class="stat-label">Sub Region:</span> 
+                  ${safeGet(countryData, 'subregion')}
+                </li>
+                <li><span class="stat-label">Capital:</span> 
+                  ${safeGet(countryData, 'capital.0')}
+                </li>
+              </ul>
 
-                <!-- Second stats block -->
-                <ul class="stats-block">
-                  <li><span class="stat-label">Top Level Domain:</span>
-                    ${countryData.tld[0]}
-                  </li>
-                  <li><span class="stat-label">Currencies:</span> 
-                    ${getCurrency(countryData.currencies)}
-                  </li>
-                  <li><span class="stat-label">Languages:</span> 
-                    ${getLanguages(countryData.languages)}
-                  </li>
-                </ul>
+              <!-- Second stats block -->
+              <ul class="stats-block">
+                <li><span class="stat-label">Top Level Domain:</span>
+                  ${safeGet(countryData, 'tld.0')}
+                </li>
+                <li><span class="stat-label">Currencies:</span> 
+                  ${safeGet(countryData, 'currencies')}
+                </li>
+                <li><span class="stat-label">Languages:</span> 
+                  ${safeGet(countryData, 'languages')}
+                </li>
+              </ul>
 
-                <!-- Third stats block -->
-                <div class="stats-block stats-flex">
-                  <h3 class="stat-label">Border Countries:</h3>
-                  <ul class="stats-flex">${bordersHTML}</ul>
-                </div>
+              <!-- Third stats block -->
+              <div class="stats-block stats-flex">
+                <h3 class="stat-label">Border Countries:</h3>
+                <ul class="stats-flex">${bordersHTML}</ul>
               </div>
             </div>
           </div>`;
-  countryInfo.insertAdjacentHTML('beforeend', countryHTML);
+  countryInfo.innerHTML = countryHTML;
+  setTimeout(() => {
+    countryInfo.querySelector('.info-text')?.classList.remove('fade-in');
+  }, 400);
 }
 
 async function renderBorderCountries(country) {

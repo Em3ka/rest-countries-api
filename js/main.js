@@ -5,6 +5,7 @@ import {
   renderError,
   removeClassOnLoad,
   clearError,
+  safeGet,
 } from './utils.js';
 import { setThemeIcon } from './themeIcon.js';
 import { getCountries } from './countries.js';
@@ -91,26 +92,28 @@ async function loadMoreCountries() {
 }
 
 function renderCountry(countryData) {
-  if (!countryData || !countryData.name?.common) return;
-  const { name, population, flags, region, capital = [] } = countryData;
+  if (!countryData) return;
+  const name = safeGet(countryData, 'name.common');
 
   const countryHTML = /* html */ `
       <li class="country-card">
         <div class="country-flag-wrapper">
           <img
-            src="${flags.png}"
-            alt="${flags.alt}" />
+            src="${safeGet(countryData, 'flags.png', 'Country flag not available')}"
+            alt="${safeGet(countryData, 'flags.alt', 'Country flag alt not available')}" />
         </div>
         <div class="country-card__details">
-          <a href="/details.html?name=${encodeURIComponent(name.common)}">
-            <h3>${name.common}</h3>
+          <a href="/details.html?name=${encodeURIComponent(name)}">
+            <h3>${name}</h3>
           </a>
-          <p><span class="stat-label">
-            Population:</span>${Number(population).toLocaleString()}
+          <p><span class="stat-label">Population:</span>
+             ${safeGet(countryData, 'population').toLocaleString()}
           </p>
-          <p><span class="stat-label">Region:</span>${region}</p>
+          <p><span class="stat-label">Region:</span>
+           ${safeGet(countryData, 'region')}
+          </p>
           <p><span class="stat-label">Capital:</span>
-            ${capital?.[0] || 'N/A'}
+             ${safeGet(countryData, 'capital.0')}
           </p>
         </div>
        </li>`;
@@ -194,22 +197,23 @@ countrySearch.addEventListener('input', (e) => {
   const name = e.target.value.trim().toLowerCase();
   clearError(statusMessage);
   countryObserver.disconnect(); // Pause loading more countries
-
-  const matchingCountries = allCountriesArr.filter((c) =>
-    c.name?.common?.toLowerCase().includes(name)
-  );
   clearCountryList();
-
-  if (matchingCountries.length > 0) {
-    renderBatch(matchingCountries);
-  } else {
-    renderError('No matches found', statusMessage);
-  }
 
   if (!name) {
     currentIndex = 0;
     loadMoreCountries(); // Load initial batch again
     countryObserver.observe(loadMoreTrigger);
+    return;
+  }
+
+  const matchingCountries = allCountriesArr.filter((c) =>
+    c.name?.common?.toLowerCase().includes(name)
+  );
+
+  if (matchingCountries.length > 0) {
+    renderBatch(matchingCountries);
+  } else {
+    renderError('No matches found', statusMessage);
   }
 });
 

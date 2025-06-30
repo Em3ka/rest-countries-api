@@ -76,3 +76,10 @@ export function clearError(containerEl) {
   containerEl.innerHTML = '';
   containerEl.setAttribute('hidden', '');
 }
+
+export function safeGet(obj, path, fallback = 'N/A') {
+  return (
+    path.split('.').reduce((acc, key) => (acc && acc[key] != null ? acc[key] : undefined), obj) ??
+    fallback
+  );
+}
