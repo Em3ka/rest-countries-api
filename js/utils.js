@@ -86,7 +86,7 @@ export function clearError(containerEl) {
 
 export function safeGet(obj, path, fallback = 'N/A') {
   return (
-    path.split('.').reduce((acc, key) => (acc && acc[key] != null ? acc[key] : undefined), obj) ??
+    path.split('.').reduce((acc, key) => (acc && acc[key] !== null ? acc[key] : undefined), obj) ??
     fallback
   );
 }

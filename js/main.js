@@ -32,6 +32,7 @@ let allCountriesArr = [];
 let isLoading = false;
 let currentIndex = 0;
 const batchSize = 12;
+let topObserver = setupTopObserver();
 
 init();
 
@@ -100,7 +101,7 @@ async function loadMoreCountries() {
 
     // Stop observing if all countries have been shown
     if (currentIndex >= allCountriesArr.length) {
-      observer.disconnect();
+      topObserver.disconnect();
     }
   } catch (error) {
     console.error(error);
@@ -124,7 +125,7 @@ function renderCountry(countryData) {
         </div>
         <div class="country-card__details">
           <a href="/details.html?name=${encodeURIComponent(name)}">
-            <h3>${name}</h3>
+            <h2>${name}</h2>
           </a>
           <p><span class="stat-label">Population:</span>
              ${safeGet(countryData, 'population').toLocaleString()}
@@ -199,6 +200,7 @@ function setupTopObserver() {
   });
 
   observer.observe(topTrigger);
+  return observer;
 }
 
 regionFilter.addEventListener('change', updateRegion);
