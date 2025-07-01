@@ -30,7 +30,7 @@ export async function getCountries(query) {
       return nameA.localeCompare(nameB);
     });
   } catch (error) {
-    if (error instanceof TypeError || error.name === 'NetworkError' || !navigator.onLine) {
+    if (error instanceof TypeError || error.name === 'NetworkError') {
       throw new Error('Network error. Please check your internet connection.');
     }
 

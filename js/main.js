@@ -91,12 +91,12 @@ async function loadMoreCountries() {
       clearError(statusMessage);
     }
 
+    currentIndex = end;
+
     // Setup "scroll to top" once first batch is shown
     if (currentIndex === batchSize) {
       setupTopObserver();
     }
-
-    currentIndex = end;
 
     // Stop observing if all countries have been shown
     if (currentIndex >= allCountriesArr.length) {
