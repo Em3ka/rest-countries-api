@@ -1,5 +1,5 @@
 export function getRootStyle(rootEl, cssVariable) {
-  return getComputedStyle(rootEl).getPropertyValue(cssVariable);
+  return getComputedStyle(rootEl).getPropertyValue(cssVariable).trim();
 }
 
 export function getPreferredTheme() {
@@ -26,11 +26,18 @@ function getBtnAriaLabel(theme) {
 }
 
 export function getCurrency(currencies) {
-  return currencies?.[Object.keys(currencies || {})[0]]?.name || '';
+  if (!currencies || typeof currencies !== 'object') return 'N/A';
+  return (
+    Object.values(currencies)
+      .map((c) => c?.name)
+      .filter(Boolean)
+      .join(', ') || 'N/A'
+  );
 }
 
 export function getLanguages(languages) {
-  return Object.values(languages || {})?.join(', ') || '';
+  if (!languages || typeof languages !== 'object') return 'N/A';
+  return Object.values(languages).filter(Boolean).join(', ') || 'N/A';
 }
 
 export function removeClassOnLoad(rootEl, className) {

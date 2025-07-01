@@ -77,6 +77,11 @@
   select {
     font: inherit;
   }
+
+  select {
+    -webkit-appearance: none;
+    appearance: none;
+  }
 }
 
 @layer base {
@@ -262,16 +267,16 @@
   }
 
   .country {
-    margin-block-start: var(--block-start, 2rem);
-    margin-block-end: var(--block-end, 4rem);
+    padding-block-start: 2rem;
+    padding-block-end: 4rem;
 
     @media (width > 48rem) {
-      --block-start: 3rem;
-      --block-end: 3.5rem;
+      padding-block-start: 3rem;
+      padding-block-end: 3.5rem;
     }
 
     @media (width > 64rem) {
-      --block-end: 3rem;
+      padding-block-end: 3rem;
     }
   }
 
@@ -308,13 +313,17 @@
   }
 
   select {
-    padding: 1rem 1.5rem;
+    padding-block: 1rem;
+    padding-inline: 1.5rem 2rem;
     background-color: var(--bg-element);
     color: var(--text-main);
     font-size: var(--font-size-xs);
     box-shadow: var(--shadow-lg);
     border: 0;
     border-radius: var(--radius);
+    background-size: 0.65em;
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
   }
 
   .country-grid {
@@ -411,12 +420,12 @@
   }
 
   .bouncing-loader {
+    display: flex;
+    align-items: center;
     position: absolute;
     inset-block-start: 50%;
     inset-inline-start: 50%;
     transform: translate(-50%, -50%);
-    display: flex;
-    align-items: center;
 
     span {
       block-size: 0.75rem;
@@ -559,7 +568,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-
     position: fixed;
     inset-block-end: 2rem;
     inset-inline-end: 2rem;

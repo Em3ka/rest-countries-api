@@ -6,6 +6,7 @@ import {
   removeClassOnLoad,
   clearError,
   safeGet,
+  getRootStyle,
 } from './utils.js';
 import { setThemeIcon } from './themeIcon.js';
 import { getCountries } from './countries.js';
@@ -35,8 +36,27 @@ const batchSize = 12;
 init();
 
 function init() {
-  initializeThemeToggle();
+  setupTheme();
   loadMoreCountries();
+}
+
+function setupTheme() {
+  const theme = getPreferredTheme();
+  setButtonAttr({ theme, button: toggleThemeBtn, buttonLabel, rootEl });
+  setThemeIcon(theme, iconProps, true);
+  updateSelectCaret();
+}
+
+function updateSelectCaret() {
+  const arrowColor = getRootStyle(rootEl, '--text-main');
+  console.log(arrowColor);
+  const svg = /* html */ `
+    <svg width='14' height='10' viewBox='0 0 14 10' xmlns='http://www.w3.org/2000/svg'>
+      <path d='M1 1l6 7 6-7' stroke='${arrowColor}' stroke-width='2' fill='none'/>
+    </svg>`;
+
+  const encoded = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  regionFilter.style.backgroundImage = `url("${encoded}")`;
 }
 
 function renderLoader(state) {
@@ -67,7 +87,7 @@ async function loadMoreCountries() {
     });
 
     // Clear error if we actually have something to render
-    if (nextBatch.length) {
+    if (nextBatch.length > 1) {
       clearError(statusMessage);
     }
 
@@ -145,21 +165,11 @@ function filterCountries(filteredList) {
   filteredList.forEach((country) => renderCountry(country));
 }
 
-function initializeThemeToggle() {
-  // Get user's preferred theme
-  const theme = getPreferredTheme();
-
-  // Set initial button attributes
-  setButtonAttr({ theme, button: toggleThemeBtn, buttonLabel, rootEl });
-
-  // Set initial button icon state
-  setThemeIcon(theme, iconProps, true);
-}
-
 toggleThemeBtn.addEventListener('click', function () {
   const newTheme = getToggledTheme(rootEl);
   setButtonAttr({ theme: newTheme, button: this, buttonLabel, rootEl });
   setThemeIcon(newTheme, iconProps, rootEl);
+  updateSelectCaret();
   localStorage.setItem('theme', newTheme);
 });
 

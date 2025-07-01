@@ -122,10 +122,10 @@ async function renderCountry(countryData) {
                   ${safeGet(countryData, 'tld.0')}
                 </li>
                 <li><span class="stat-label">Currencies:</span> 
-                  ${safeGet(countryData, 'currencies')}
+                  ${getCurrency(countryData.currencies)}
                 </li>
                 <li><span class="stat-label">Languages:</span> 
-                  ${safeGet(countryData, 'languages')}
+                  ${getLanguages(countryData.languages)}
                 </li>
               </ul>
 
