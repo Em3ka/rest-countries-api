@@ -32,7 +32,7 @@ let allCountriesArr = [];
 let isLoading = false;
 let currentIndex = 0;
 const batchSize = 12;
-let topObserver = setupTopObserver();
+const topObserver = setupTopObserver();
 
 init();
 
