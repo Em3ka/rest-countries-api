@@ -32,12 +32,12 @@
     </script>
     <link rel="stylesheet" href="css/style.css" />
     <script src="https://cdn.jsdelivr.net/npm/motion@12.18.1/dist/motion.min.js"></script>
-    <script type="module" src="/js/main.js"></script>
+    <script type="module" src="js/details.js"></script>
   </head>
   <body>
     <header class="header">
       <div class="wrapper flex-group">
-        <a href="/">
+        <a href="/index.html">
           <h1 class="header-title">Where in the world?</h1>
         </a>
         <button
@@ -77,43 +77,13 @@
       </div>
     </header>
     <main>
-      <section class="hero">
-        <div class="wrapper flex-group">
-          <div class="country-search-wrapper">
-            <label for="countrySearch" class="visually-hidden"> Search for a country </label>
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input
-              type="text"
-              name="search"
-              id="countrySearch"
-              placeholder="Search for a country..."
-              class="country-search" />
-          </div>
-          <label for="region" class="visually-hidden">Filter countries by region</label>
-          <select name="region" id="region">
-            <option value="" disabled selected>Filter by Region</option>
-            <option value="Africa">Africa</option>
-            <option value="Americas">Americas</option>
-            <option value="Asia">Asia</option>
-            <option value="Europe">Europe</option>
-            <option value="Oceania">Oceania</option>
-          </select>
-        </div>
-        <div class="country">
-          <div class="wrapper" data-padding="compact">
-            <div class="top-trigger"></div>
-            <ul class="country-grid" aria-live="polite"></ul>
-            <div id="loadMoreTrigger"></div>
-            <button class="scroll-to-top" aria-label="Scroll to top">
-              <i class="fa-solid fa-arrow-up"></i>
-            </button>
-          </div>
-          <div class="bouncing-loader" aria-hidden="true" hidden>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
+      <section class="details" id="countryDetails">
+        <div class="wrapper">
+          <a href="/index.html" class="button">
+            <i class="fa-solid fa-arrow-left-long"></i>
+            Back
+          </a>
+          <div class="country-info"></div>
           <div class="wrapper status-message" role="alert" hidden></div>
         </div>
       </section>

@@ -16,7 +16,10 @@ const VISIBILITY = {
 const CSS_VARS = {
   SUN_COLOR: '--sun-color',
   MOON_COLOR: '--moon-color',
+  SUN_STROKE: '--sun-stroke',
+  MOON_STROKE: '--moon-stroke',
   SUN_STROKE_WIDTH: '--sun-stroke-width',
+  MOON_STROKE_WIDTH: '--moon-stroke-width',
 };
 
 const raysVariants = {
@@ -36,7 +39,7 @@ const rayVariant = {
   visible: (rootEl) => ({
     opacity: 1,
     scale: 1,
-    stroke: getRootStyle(rootEl, CSS_VARS.SUN_COLOR),
+    stroke: getRootStyle(rootEl, CSS_VARS.SUN_STROKE),
     strokeWidth: getRootStyle(rootEl, CSS_VARS.SUN_STROKE_WIDTH),
     transition: {
       duration: 0.5,
@@ -58,8 +61,8 @@ const shineVariant = {
   },
   visible: (rootEl) => ({
     opacity: [0, 1, 0],
-    strokeWidth: 5,
-    stroke: getRootStyle(rootEl, CSS_VARS.MOON_COLOR),
+    stroke: getRootStyle(rootEl, CSS_VARS.MOON_STROKE),
+    strokeWidth: getRootStyle(rootEl, CSS_VARS.MOON_STROKE_WIDTH),
     strokeDashoffset: [0, -50, -100],
     filter: ['blur(2px)', 'blur(2px)', 'blur(0px)'],
     transition: {
@@ -70,45 +73,46 @@ const shineVariant = {
 };
 
 function setThemeIcon(theme, iconProps, isInitial = false) {
-  const { core, sunStroke, moonShine, rootEl } = iconProps;
+  const { core, sunRay, moonRay, rootEl } = iconProps;
   const sunColor = getRootStyle(rootEl, CSS_VARS.SUN_COLOR);
+  const sunStroke = getRootStyle(rootEl, CSS_VARS.SUN_STROKE);
   const moonColor = getRootStyle(rootEl, CSS_VARS.MOON_COLOR);
-
-  const isLight = theme === 'light';
+  const moonStroke = getRootStyle(rootEl, CSS_VARS.MOON_STROKE);
+  const isDark = theme === 'dark';
 
   animate(core, {
-    d: isLight ? ICON_PATHS.SUN : ICON_PATHS.MOON,
-    rotate: isLight ? 0 : 360,
-    stroke: isLight ? sunColor : moonColor,
-    fill: isLight ? sunColor : moonColor,
-    fillOpacity: 0.35,
+    d: isDark ? ICON_PATHS.SUN : ICON_PATHS.MOON,
+    rotate: isDark ? 0 : 360,
+    stroke: isDark ? sunStroke : moonStroke,
+    fill: isDark ? sunColor : moonColor,
+    fillOpacity: isDark ? 0.35 : 1,
     strokeOpacity: 1,
-    scale: isLight ? 1 : 2,
+    scale: isDark ? 1 : 2,
   });
 
-  animate(sunStroke, {
-    strokeOpacity: isLight
+  animate(sunRay, {
+    strokeOpacity: isDark
       ? raysVariants.visible.strokeOpacity
       : raysVariants.hidden.strokeOpacity,
   });
 
-  sunStroke.forEach((ray, i) => {
+  sunRay.forEach((ray, i) => {
     setTimeout(() => {
       const variant =
-        rayVariant[isLight ? VISIBILITY.VISIBLE : VISIBILITY.HIDDEN];
+        rayVariant[isDark ? VISIBILITY.VISIBLE : VISIBILITY.HIDDEN];
       const resolved = resolveVariant(variant, rootEl);
       applyVariant(ray, resolved);
     }, i * 50);
   });
 
-  if (!isLight && isInitial && !hasAnimatedShineOnce) {
-    applyVariant(moonShine, shineVariant.hidden);
+  if (!isDark && isInitial && !hasAnimatedShineOnce) {
+    applyVariant(moonRay, shineVariant.hidden);
     return;
   }
 
-  const shine = shineVariant[isLight ? VISIBILITY.HIDDEN : VISIBILITY.VISIBLE];
+  const shine = shineVariant[isDark ? VISIBILITY.HIDDEN : VISIBILITY.VISIBLE];
   const resolved = resolveVariant(shine, rootEl);
-  applyVariant(moonShine, resolved);
+  applyVariant(moonRay, resolved);
 
   hasAnimatedShineOnce = true;
 }
