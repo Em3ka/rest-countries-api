@@ -519,7 +519,7 @@
     border-radius: var(--radius-lg);
   }
 
-  .info-text h2 {
+  .info-text h1 {
     font-size: var(--font-size-2xl);
     margin-block-end: 1rem;
   }
@@ -570,7 +570,7 @@
     align-items: center;
     position: fixed;
     inset-block-end: 2rem;
-    inset-inline-end: 2rem;
+    inset-inline-end: 1rem;
     inline-size: 2rem;
     block-size: 2rem;
     padding: 1rem;

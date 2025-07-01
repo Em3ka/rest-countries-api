@@ -11,6 +11,7 @@ import {
 import { setThemeIcon } from './themeIcon.js';
 import { getCountries, getBorderCountryName } from './countries.js';
 
+const countryDetails = document.getElementById('countryDetails');
 const countryInfo = document.querySelector('.country-info');
 const buttonLabel = document.getElementById('themeToggleLabel');
 const toggleThemeBtn = document.getElementById('themeToggle');
@@ -88,17 +89,20 @@ function hideSkeleton() {
 }
 
 async function renderCountry(countryData) {
-  console.log(countryData);
+  countryDetails.setAttribute(
+    'aria-label',
+    `${safeGet(countryData, 'name.common')} country details`
+  );
   const bordersHTML = await renderBorderCountries(countryData);
   const countryHTML = /* html */ `
         <img class="country-flag" 
               src="${safeGet(countryData, 'flags.svg', 'Country flag not available')}"
               alt="${safeGet(countryData, 'flags.alt', 'Country flag alt not available')}" />
           <div class="info-text fade-in">
-            <h2 id="country-heading">${safeGet(countryData, 'name.common')}</h2>
+            <h1>${safeGet(countryData, 'name.common')}</h1>
             <div class="stats-grid">
               <!-- First stats block -->
-              <ul class="stats-block">
+              <ul class="stats-block" aria-label="General country statistics">
                 <li><span class="stat-label">Native Name:</span> 
                   ${safeGet(countryData, 'altSpellings.1')}
                 </li>
@@ -117,7 +121,7 @@ async function renderCountry(countryData) {
               </ul>
 
               <!-- Second stats block -->
-              <ul class="stats-block">
+              <ul class="stats-block" aria-label="Technical country details">
                 <li><span class="stat-label">Top Level Domain:</span>
                   ${safeGet(countryData, 'tld.0')}
                 </li>
@@ -131,11 +135,12 @@ async function renderCountry(countryData) {
 
               <!-- Third stats block -->
               <div class="stats-block stats-flex">
-                <h3 class="stat-label">Border Countries:</h3>
-                <ul class="stats-flex">${bordersHTML}</ul>
+                <h2 id="borders-heading" class="stat-label">Border Countries:</h2>
+                <ul aria-labelledby="borders-heading" class="stats-flex">${bordersHTML}</ul>
               </div>
             </div>
           </div>`;
+
   countryInfo.innerHTML = countryHTML;
   setTimeout(() => {
     countryInfo.querySelector('.info-text')?.classList.remove('fade-in');
