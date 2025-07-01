@@ -32,7 +32,7 @@ Users should be able to:
 ### 🔗 Links
 
 [![Github repo](https://img.shields.io/badge/GitHub-181717.svg?style=for-the-badge&logo=GitHub&logoColor=white)](https://github.com/Em3ka/rest-countries-api)
-[![Live URL](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)]()
+[![Live URL](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://rest-countries-api-xi-wine.vercel.app/)
 
 ## My process
 
