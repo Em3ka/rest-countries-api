@@ -91,15 +91,12 @@ function setThemeIcon(theme, iconProps, isInitial = false) {
   });
 
   animate(sunRay, {
-    strokeOpacity: isDark
-      ? raysVariants.visible.strokeOpacity
-      : raysVariants.hidden.strokeOpacity,
+    strokeOpacity: isDark ? raysVariants.visible.strokeOpacity : raysVariants.hidden.strokeOpacity,
   });
 
   sunRay.forEach((ray, i) => {
     setTimeout(() => {
-      const variant =
-        rayVariant[isDark ? VISIBILITY.VISIBLE : VISIBILITY.HIDDEN];
+      const variant = rayVariant[isDark ? VISIBILITY.VISIBLE : VISIBILITY.HIDDEN];
       const resolved = resolveVariant(variant, rootEl);
       applyVariant(ray, resolved);
     }, i * 50);
@@ -131,4 +128,4 @@ function applyVariant(el, variant) {
   });
 }
 
-export { setThemeIcon };
+export default setThemeIcon;

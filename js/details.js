@@ -8,7 +8,7 @@ import {
   renderError,
   safeGet,
 } from './utils.js';
-import { setThemeIcon } from './themeIcon.js';
+import setThemeIcon from './themeIcon.js';
 import { getCountries, getBorderCountryName } from './countries.js';
 
 const countryDetails = document.getElementById('countryDetails');

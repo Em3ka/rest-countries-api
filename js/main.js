@@ -8,7 +8,7 @@ import {
   safeGet,
   getRootStyle,
 } from './utils.js';
-import { setThemeIcon } from './themeIcon.js';
+import setThemeIcon from './themeIcon.js';
 import { getCountries } from './countries.js';
 
 const topTrigger = document.querySelector('.top-trigger');
